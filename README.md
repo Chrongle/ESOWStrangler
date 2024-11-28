@@ -11,7 +11,7 @@ How to make the application run locally:
 
 Prerequisites:
 
-    Docker has to be installed and running
+    - Docker has to be installed and running
 
 How to use:
 
@@ -19,6 +19,7 @@ How to use:
     - Open the application by opening "eshopwebmvc" on http://localhost:5106/
 
 Notes:
+
     - The catalog service can be tricky to get running for the first time. So if it fails just boot it up again.
     - The browser will probably prompt you about the database needs to be migrated. Just press the "apply migration" button and refresh the page.
 
