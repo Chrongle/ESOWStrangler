@@ -1,0 +1,6 @@
+FROM rabbitmq:3.13-management
+
+COPY rabbitmq_init_script.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/rabbitmq_init_script.sh
+
+CMD ["sh", "-c", "rabbitmq-server & /usr/local/bin/rabbitmq_init_script.sh && wait"]

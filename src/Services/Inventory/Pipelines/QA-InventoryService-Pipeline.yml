@@ -1,0 +1,31 @@
+jobs:
+  - job: InventoryServiceQA
+    pool: Default
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - task: SonarCloudPrepare@3
+      displayName: 'Prepare SonarCloud'
+      inputs:
+        SonarCloud: SonarCloud
+        organization: eshoponwebstrangler
+        scannerMode: dotnet
+        projectKey: eshoponwebstrangler_ESOWStrangler_Inventory
+        extraProperties: |
+          sonar.sources = src/Services/Inventory/Inventory.sln
+
+    - task: DotNetCoreCLI@2
+      displayName: '.Net build'
+      inputs:
+        command: build
+        projects: src/Services/Inventory/Inventory.sln
+        arguments: '-c Release --no-incremental /nr:false'
+    
+    - task: SonarCloudAnalyze@3
+      displayName: 'Analyze'
+
+    - task: SonarCloudPublish@3
+      displayName: 'Publish code analysis'
+      inputs:
+        pollingTimeoutSec: 300

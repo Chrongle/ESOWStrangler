@@ -1,0 +1,117 @@
+volumes:
+  elastic_data: {}
+  catalog-mssql-data:
+  redis-data:
+
+networks:
+  intern:
+    driver: bridge
+
+services:
+
+  ### WEB ###
+  eshopwebmvc:
+    container_name: eshopwebmvc
+    image: martinsthomsen/eshopwebmvc:latest
+    environment:
+     - ASPNETCORE_ENVIRONMENT=Docker
+     - ASPNETCORE_URLS=http://+:8080
+    ports:
+     - "5106:8080"
+    depends_on:
+      - "eshopwebmvc-mssql-db"
+      - "gateway-service"
+    networks:
+      - intern
+
+  eshopwebmvc-mssql-db:
+    container_name: eshopwebmvc-mssql-db
+    image: mcr.microsoft.com/azure-sql-edge
+    ports:
+      - "1433:1433"
+    environment:
+      - SA_PASSWORD=@someThingComplicated1234
+      - ACCEPT_EULA=Y
+    networks:
+      - intern
+
+  ### GATEWAY ###
+  gateway-service:
+    container_name: gateway-service
+    image: martinsthomsen/gatewayservice:latest
+    ports:
+      - "8011:8080"
+    networks:
+      - intern
+
+  ### CATALOG ###
+  catalog-service:
+    container_name: catalog-service
+    image: martinsthomsen/catalogservice:latest
+    depends_on:
+      - catalog-redis-cache
+      - catalog-mssql-db
+    ports:
+      - 8001:8080
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__CatalogDb=Server=catalog-mssql-db,1433;Database=CatalogDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=catalog-redis-cache:6379
+    networks:
+      - intern
+      
+  catalog-mssql-db:
+    container_name: catalog-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1434:1433
+    volumes:
+      - catalog-mssql-data:/var/opt/mssql/data
+      - ./MigrateData/database_script.sql:/scripts/database_script.sql
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - intern
+  
+  catalog-redis-cache:
+    container_name: catalog-redis-cache
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    networks:
+      - intern
+
+  ### LOGGING ###
+  elasticsearch:
+    image: elasticsearch:7.16.2
+    container_name: elasticsearch
+    restart: no
+    volumes:
+    - elastic_data:/usr/share/elasticsearch/data/
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      discovery.type: single-node
+    ports:
+    - '9200:9200'
+    - '9300:9300'
+    networks:
+      - intern
+      
+  kibana:
+    image: kibana:7.16.2
+    container_name: kibana
+    restart: no       
+    ports:
+    - '5601:5601'
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - intern

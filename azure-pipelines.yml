@@ -1,0 +1,57 @@
+trigger:
+- main
+- pullRequest
+
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+name: $(Date:yyyyMMdd).$(Rev:r)
+
+stages:
+- stage: Build_Services
+  condition: and(succeeded(), eq(variables.isMain, false))
+  jobs:
+  - template: src/Gateways/Web/Pipelines/Build-GatewayService-Pipeline.yml
+  - template: src/Services/Basket/Pipelines/Build-BasketService-Pipeline.yml
+  - template: src/Services/Catalog/Pipelines/Build-CatalogService-Pipeline.yml
+  - template: src/Services/Inventory/Pipelines/Build-InventoryService-Pipeline.yml
+  - template: src/Services/Order/Pipelines/Build-OrderService-Pipeline.yml
+  - template: src/Services/Payment/Pipelines/Build-PaymentService-Pipeline.yml
+  - template: src/Services/User/Pipelines/Build-UserService-Pipeline.yml
+  - template: src/Services/UserManagement/Pipelines/Build-UserManagementService-Pipeline.yml
+
+- stage: Run_Tests
+  condition: and(succeeded(), eq(variables.isMain, false))
+  jobs:
+  - template: src/Gateways/Web/Pipelines/RunTests-GatewayService-Pipeline.yml
+  - template: src/Services/Basket/Pipelines/RunTests-BasketService-Pipeline.yml
+  - template: src/Services/Catalog/Pipelines/RunTests-CatalogService-Pipeline.yml
+  - template: src/Services/Inventory/Pipelines/RunTests-InventoryService-Pipeline.yml
+  - template: src/Services/Order/Pipelines/RunTests-OrderService-Pipeline.yml
+  - template: src/Services/Payment/Pipelines/RunTests-PaymentService-Pipeline.yml
+  - template: src/Services/User/Pipelines/RunTests-UserService-Pipeline.yml
+  - template: src/Services/UserManagement/Pipelines/RunTests-UserManagementService-Pipeline.yml
+
+- stage: Quality_Assurance
+  condition: and(succeeded(), eq(variables.isMain, false))
+  jobs:
+  - template: src/Gateways/Web/Pipelines/QA-GatewayService-Pipeline.yml
+  - template: src/Services/Basket/Pipelines/QA-BasketService-Pipeline.yml
+  - template: src/Services/Catalog/Pipelines/QA-CatalogService-Pipeline.yml
+  - template: src/Services/Inventory/Pipelines/QA-InventoryService-Pipeline.yml
+  - template: src/Services/Order/Pipelines/QA-OrderService-Pipeline.yml
+  - template: src/Services/Payment/Pipelines/QA-PaymentService-Pipeline.yml
+  - template: src/Services/User/Pipelines/QA-UserService-Pipeline.yml
+  - template: src/Services/UserManagement/Pipelines/QA-UserManagementService-Pipeline.yml
+
+- stage: Deploy_Services
+  condition: eq(variables.isMain, true)
+  jobs:
+  - template: src/Gateways/Web/Pipelines/Deploy-GatewayService-Pipeline.yml
+  - template: src/Services/Basket/Pipelines/Deploy-BasketService-Pipeline.yml
+  - template: src/Services/Catalog/Pipelines/Deploy-CatalogService-Pipeline.yml
+  - template: src/Services/Inventory/Pipelines/Deploy-InventoryService-Pipeline.yml
+  - template: src/Services/Order/Pipelines/Deploy-OrderService-Pipeline.yml
+  - template: src/Services/Payment/Pipelines/Deploy-PaymentService-Pipeline.yml
+  - template: src/Services/User/Pipelines/Deploy-UserService-Pipeline.yml
+  - template: src/Services/UserManagement/Pipelines/Deploy-UserManagementService-Pipeline.yml

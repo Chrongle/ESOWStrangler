@@ -1,0 +1,31 @@
+jobs:
+  - job: GatewayServiceQA
+    pool: Default
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - task: SonarCloudPrepare@3
+      displayName: 'Prepare SonarCloud'
+      inputs:
+        SonarCloud: SonarCloud
+        organization: eshoponwebstrangler
+        scannerMode: dotnet
+        projectKey: eshoponwebstrangler_ESOWStrangler_Gateway
+        extraProperties: |
+          sonar.sources = src/Gateways/Web/Gateway.sln
+
+    - task: DotNetCoreCLI@2
+      displayName: '.Net build'
+      inputs:
+        command: build
+        projects: src/Gateways/Web/Gateway.sln
+        arguments: '-c Release --no-incremental /nr:false'
+    
+    - task: SonarCloudAnalyze@3
+      displayName: 'Analyze'
+
+    - task: SonarCloudPublish@3
+      displayName: 'Publish code analysis'
+      inputs:
+        pollingTimeoutSec: 300

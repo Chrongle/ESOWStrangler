@@ -1,0 +1,25 @@
+
+Basket Context:
+  Entities: Basket, BasketItem
+  Services: BasketService
+  Operations: AddItemToBasket, SetQuantities, TransferBasket
+
+Order Context:
+  Entities: Order, OrderItem
+  Services: OrderService
+  Operations: CreateOrder, GetOrderDetails
+
+Catalog Context:
+  Entities: Product, Category
+  Services: CatalogService
+  Operations: GetProductDetails, ListProducts
+  
+Payment Context:
+  Entities: Payment, Transaction
+  Services: PaymentService
+  Operations: ProcessPayment
+
+User Management Context:
+  Entities: User, Role
+  Services: UserService
+  Operations: RegisterUser, AuthenticateUser

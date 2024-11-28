@@ -1,0 +1,3 @@
+Run this cmd to built models from database:
+
+dotnet ef dbcontext scaffold "Server=localhost,1433;Database=CatalogDb;User Id=sa;Password=Ladida.12;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -o Models

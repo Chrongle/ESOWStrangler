@@ -1,0 +1,175 @@
+{
+  "GlobalConfiguration": {
+    "BaseUrl": "http://gateway-service:8080"
+  },
+  "Routes": [
+    {
+      "UpstreamPathTemplate": "/gateway/api/catalog/brands",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/catalog/brands",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "catalog-service",
+          "Port": 8080
+        }
+      ],
+      "FileCacheOptions": {
+        "TtlSeconds": 10
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/catalog/types",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/catalog/types",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "catalog-service",
+          "Port": 8080
+        }
+      ],
+      "FileCacheOptions": {
+        "TtlSeconds": 10
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/catalog/items",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/catalog/items",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "catalog-service",
+          "Port": 8080
+        }
+      ],
+      "FileCacheOptions": {
+        "TtlSeconds": 10
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/catalog/item",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/catalog/item",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "catalog-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/usermanagement/registeruser",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/usermanagement/registeruser",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usermanagement-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/usermanagement/account/login",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/usermanagement/account/login",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usermanagement-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/usermanagement/auth",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/usermanagement/auth",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usermanagement-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/authtest",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/authtest",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "usermanagement-service",
+          "Port": 8080
+        }
+      ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/basket",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/basket",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "basket-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/basket/id",
+      "UpstreamHttpMethod": ["GET"],
+      "DownstreamPathTemplate": "/api/basket/id",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "basket-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/basket",
+      "UpstreamHttpMethod": ["Post"],
+      "DownstreamPathTemplate": "/api/basket",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "basket-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/basket",
+      "UpstreamHttpMethod": ["Put"],
+      "DownstreamPathTemplate": "/api/basket",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "basket-service",
+          "Port": 8080
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/gateway/api/basket",
+      "UpstreamHttpMethod": ["Delete"],
+      "DownstreamPathTemplate": "/api/basket",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "basket-service",
+          "Port": 8080
+        }
+      ]
+    }
+  ]
+}

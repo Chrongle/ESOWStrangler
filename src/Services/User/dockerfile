@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+WORKDIR /src
+
+COPY ["User.Api/User.Api.csproj", "User.Api/"]
+COPY ["User.Core/User.Core.csproj", "User.Core/"]
+COPY ["User.Infrastructure/User.Infrastructure.csproj", "User.Infrastructure/"]
+COPY ["SharedLibrary/SharedLibrary.csproj", "SharedLibrary/"]
+
+RUN dotnet restore "User.Api/User.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/User.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "User.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "User.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "User.Api.dll"]

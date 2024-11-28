@@ -1,0 +1,77 @@
+networks:
+  netnet:
+    driver: bridge
+
+volumes:
+  usermanagement-mssql-data:
+  user-mssql-data:
+
+services:
+
+  usermanagement-service:
+    container_name: usermanagement-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 8002:8080
+    depends_on:
+      - usermanagement-mssql-db
+    environment:
+      ConnectionStrings__usermanagementdb: "Server=usermanagement-mssql-db,1433;Database=UserManagementDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;"
+    networks: 
+      - netnet
+
+  usermanagement-mssql-db:
+    container_name: usermanagement-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1435:1433
+    volumes:
+      - usermanagement-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+
+  
+  user-service:
+    container_name: user-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - user-mssql-db
+    ports:
+      - 8003:8080
+    environment:
+      ConnectionStrings__UserDb: "Server=user-mssql-db,1433;Database=UserDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;"
+
+  user-mssql-db:
+    container_name: user-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1436:1433
+    volumes:
+      - user-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - netnet

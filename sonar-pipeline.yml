@@ -1,0 +1,12 @@
+trigger:
+- main
+
+jobs:
+  - template: src/Gateways/Web/Pipelines/QA-GatewayService-Pipeline.yml
+  - template: src/Services/Basket/Pipelines/QA-BasketService-Pipeline.yml
+  - template: src/Services/Catalog/Pipelines/QA-CatalogService-Pipeline.yml
+  - template: src/Services/Inventory/Pipelines/QA-InventoryService-Pipeline.yml
+  - template: src/Services/Order/Pipelines/QA-OrderService-Pipeline.yml
+  - template: src/Services/Payment/Pipelines/QA-PaymentService-Pipeline.yml
+  - template: src/Services/User/Pipelines/QA-UserService-Pipeline.yml
+  - template: src/Services/UserManagement/Pipelines/QA-UserManagementService-Pipeline.yml

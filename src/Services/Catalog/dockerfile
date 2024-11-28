@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+WORKDIR /src
+
+COPY ["Catalog.Api/Catalog.Api.csproj", "Catalog.Api/"]
+COPY ["Catalog.Core/Catalog.Core.csproj", "Catalog.Core/"]
+COPY ["Catalog.Infrastructure/Catalog.Infrastructure.csproj", "Catalog.Infrastructure/"]
+COPY ["SharedLibrary/SharedLibrary.csproj", "SharedLibrary/"]
+
+RUN dotnet restore "Catalog.Api/Catalog.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/Catalog.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "Catalog.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "Catalog.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "Catalog.Api.dll"]

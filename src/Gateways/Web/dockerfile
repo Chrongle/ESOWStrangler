@@ -1,0 +1,28 @@
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["Web.Gateway.Api/Web.Gateway.Api.csproj", "Web.Gateway.Api/"]
+COPY ["Web.Gateway.Core/Web.Gateway.Core.csproj", "Web.Gateway.Core/"]
+COPY ["Web.Gateway.Infrastructure/Web.Gateway.Infrastructure.csproj", "Web.Gateway.Infrastructure/"]
+
+RUN dotnet restore "Web.Gateway.Api/Web.Gateway.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/Web.Gateway.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "Web.Gateway.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "Web.Gateway.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "Web.Gateway.Api.dll"]

@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["Basket.Api/Basket.Api.csproj", "Basket.Api/"]
+COPY ["Basket.Core/Basket.Core.csproj", "Basket.Core/"]
+COPY ["Basket.Infrastructure/Basket.Infrastructure.csproj", "Basket.Infrastructure/"]
+
+RUN dotnet restore "Basket.Api/Basket.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/Basket.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "Basket.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "Basket.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "Basket.Api.dll"]

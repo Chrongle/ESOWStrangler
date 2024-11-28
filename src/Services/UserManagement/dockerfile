@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["UserManagement.Api/UserManagement.Api.csproj", "UserManagement.Api/"]
+COPY ["UserManagement.Core/UserManagement.Core.csproj", "UserManagement.Core/"]
+COPY ["UserManagement.Infrastructure/UserManagement.Infrastructure.csproj", "UserManagement.Infrastructure/"]
+
+RUN dotnet restore "UserManagement.Api/UserManagement.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/UserManagement.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "UserManagement.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "UserManagement.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "UserManagement.Api.dll"]

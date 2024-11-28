@@ -1,0 +1,30 @@
+volumes:
+  user-mssql-data:
+
+services:
+
+  user-service:
+    container_name: user-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - user-mssql-db
+    ports:
+      - 8002:8080
+    environment:
+      ConnectionStrings__UserDb: "Server=user-mssql-db,1433;Database=UserDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;"
+
+  user-mssql-db:
+    container_name: user-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1436:1433
+    volumes:
+      - user-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word

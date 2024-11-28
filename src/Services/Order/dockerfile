@@ -1,0 +1,28 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+WORKDIR /src
+
+COPY ["Order.Api/Order.Api.csproj", "Order.Api/"]
+COPY ["Order.Core/Order.Core.csproj", "Order.Core/"]
+COPY ["Order.Infrastructure/Order.Infrastructure.csproj", "Order.Infrastructure/"]
+
+RUN dotnet restore "Order.Api/Order.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/Order.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "Order.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "Order.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "Order.Api.dll"]

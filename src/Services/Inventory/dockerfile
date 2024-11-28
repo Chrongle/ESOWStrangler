@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["Inventory.Api/Inventory.Api.csproj", "Inventory.Api/"]
+COPY ["Inventory.Core/Inventory.Core.csproj", "Inventory.Core/"]
+COPY ["Inventory.Infrastructure/Inventory.Infrastructure.csproj", "Inventory.Infrastructure/"]
+
+RUN dotnet restore "Inventory.Api/Inventory.Api.csproj"
+
+COPY . .
+
+WORKDIR "/src/Inventory.Api"
+
+ARG CONFIGURATION=Release
+
+RUN dotnet build "Inventory.Api.csproj" -c $CONFIGURATION -o /app/build
+
+RUN dotnet publish "Inventory.Api.csproj" -c $CONFIGURATION -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "Inventory.Api.dll"]

@@ -1,0 +1,28 @@
+jobs:
+  - job: GatewayServiceDeploy
+    pool: Default
+    steps:
+    - checkout: self
+      fetchDepth: 0
+      
+    - task: Docker@2
+      displayName: 'Login to docker'
+      inputs:
+        command: login
+        containerRegistry: DockerContainerRegistryServiceConnection
+
+    - task: Docker@2
+      displayName: 'Build docker image'
+      inputs:
+        command: build
+        Dockerfile: src/Gateways/Web/dockerfile
+        repository: martinsthomsen/gatewayservice
+        tags: latest,$(Build.BuildNumber)
+
+    - task: Docker@2
+      displayName: 'Push image to DockerHub'
+      inputs:
+        command: push
+        repository: martinsthomsen/gatewayservice
+        containerRegistry: DockerContainerRegistryServiceConnection
+        tags: latest,$(Build.BuildNumber)

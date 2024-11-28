@@ -1,0 +1,18 @@
+jobs:
+  - job: UserServiceBuild
+    pool: Default
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk 8.x'
+      inputs:
+        version: 8.x
+
+    - task: DotNetCoreCLI@2
+      displayName: '.Net build'
+      inputs:
+        command: build
+        projects: src/Services/User/User.sln
+        arguments: '-c Release --no-incremental /nr:false'

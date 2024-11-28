@@ -1,0 +1,22 @@
+[
+  {
+    "Id": 1,
+    "Brand": "Azure"
+  },
+  {
+    "Id": 2,
+    "Brand": ".NET"
+  },
+  {
+    "Id": 3,
+    "Brand": "Visual Studio"
+  },
+  {
+    "Id": 4,
+    "Brand": "SQL Server"
+  },
+  {
+    "Id": 5,
+    "Brand": "Other"
+  }
+]

@@ -1,0 +1,31 @@
+jobs:
+  - job: UserManagementServiceQA
+    pool: Default
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - task: SonarCloudPrepare@3
+      displayName: 'Prepare SonarCloud'
+      inputs:
+        SonarCloud: SonarCloud
+        organization: eshoponwebstrangler
+        scannerMode: dotnet
+        projectKey: eshoponwebstrangler_ESOWStrangler_UserManagement
+        extraProperties: |
+          sonar.sources = src/Services/UserManagement/UserManagement.sln
+
+    - task: DotNetCoreCLI@2
+      displayName: '.Net build'
+      inputs:
+        command: build
+        projects: src/Services/UserManagement/UserManagement.sln
+        arguments: '-c Release --no-incremental /nr:false'
+    
+    - task: SonarCloudAnalyze@3
+      displayName: 'Analyze'
+
+    - task: SonarCloudPublish@3
+      displayName: 'Publish code analysis'
+      inputs:
+        pollingTimeoutSec: 300

@@ -1,0 +1,24 @@
+jobs:
+  - job: InventoryServiceTest
+    pool: Default
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk 8.x'
+      inputs:
+        version: 8.x
+
+    - task: DotNetCoreCLI@2
+      displayName: '.Net test'
+      inputs:
+        command: test
+        projects: src/Services/Inventory/Inventory.Tests/**/*.csproj
+        arguments: '-c Release'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      condition: succeededOrFailed()
+      inputs:
+        testRunner: VSTest

@@ -1,0 +1,41 @@
+volumes:
+  catalog-mssql-data:
+  redis-data:
+
+services:
+  catalog-service:
+    container_name: catalog-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - catalog-redis-cache
+      - catalog-mssql-db
+    ports:
+      - 8001:8080
+    environment:
+      ConnectionStrings__CatalogDb: "Server=catalog-mssql-db,1433;Database=CatalogDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;"
+      ConnectionStrings__RedisConnection: "redis-cache:6379"
+
+  catalog-mssql-db:
+    container_name: catalog-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1434:1433
+    volumes:
+      - catalog-mssql-data:/var/opt/mssql/data
+      - ./MigrateData/database_script.sql:/scripts/database_script.sql
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+  
+  catalog-redis-cache:
+    container_name: catalog-redis-cache
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
