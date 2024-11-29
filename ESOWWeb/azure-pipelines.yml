@@ -1,0 +1,30 @@
+trigger:
+- main
+
+jobs:
+- job: ESOWWebDeploy
+  pool: Default
+
+  steps:
+  - task: Docker@2
+    displayName: 'Login to docker'
+    inputs:
+      command: login
+      containerRegistry: DockerContainerRegistryServiceConnection
+
+  - task: Docker@2
+    displayName: 'Build docker image'
+    inputs:
+      command: build
+      Dockerfile: src/Web/Dockerfile
+      buildContext: '.'
+      repository: martinsthomsen/eshopwebmvc
+      tags: latest,$(Build.BuildNumber)
+
+  - task: Docker@2
+    displayName: 'Push image to DockerHub'
+    inputs:
+      command: push
+      repository: martinsthomsen/eshopwebmvc
+      containerRegistry: DockerContainerRegistryServiceConnection
+      tags: latest,$(Build.BuildNumber)

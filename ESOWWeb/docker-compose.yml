@@ -1,0 +1,292 @@
+volumes:
+  catalog-mssql-data:
+  redis-data:
+  usermanagement-mssql-data:
+  user-mssql-data:
+  basket-mssql-data:
+  order-mssql-data:
+  inventory-mssql-data:
+
+networks:
+  netnet:
+    driver: bridge
+
+services:
+  eshopwebmvc:
+    image: ${DOCKER_REGISTRY-}eshopwebmvc
+    build:
+      context: .
+      dockerfile: src/Web/Dockerfile
+    depends_on:
+      - "eshopwebmvc-mssql-db"
+      - "gateway-service"
+    networks:
+      - netnet
+    environment:
+      - UseCatalogMicroservice=true
+      - UseBasketMicroservice=true
+      - UseOrderMicroservice=true
+  # eshoppublicapi:
+  #   image: ${DOCKER_REGISTRY-}eshoppublicapi
+  #   build:
+  #     context: .
+  #     dockerfile: src/PublicApi/Dockerfile
+  #   depends_on:
+  #     - "sqlserver"
+  eshopwebmvc-mssql-db:
+    image: mcr.microsoft.com/azure-sql-edge
+    ports:
+      - "1433:1433"
+    environment:
+      - SA_PASSWORD=@someThingComplicated1234
+      - ACCEPT_EULA=Y
+    networks:
+      - netnet
+  
+  ### Strangler Services ###
+
+  gateway-service:
+    image: gateway-service
+    build:
+      context: ../ESOWStrangler/src/Gateways/Web/
+      dockerfile: dockerfile
+    ports:
+      - "8011:8080"
+    networks:
+      - netnet
+
+  catalog-service:
+    container_name: catalog-service
+    build:
+      context: ../ESOWStrangler/src/Services/Catalog
+      dockerfile: Dockerfile
+    depends_on:
+      catalog-redis-cache:
+        condition: service_started
+      catalog-mssql-db:
+        condition: service_started
+    ports:
+      - 8001:8080
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__CatalogDb=Server=catalog-mssql-db,1433;Database=CatalogDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+      - ConnectionStrings__RedisConnection=catalog-redis-cache:6379
+    networks:
+      - netnet
+      
+  catalog-mssql-db:
+    container_name: catalog-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1434:1433
+    volumes:
+      - catalog-mssql-data:/var/opt/mssql/data
+      - ./MigrateData/database_script.sql:/scripts/database_script.sql
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+  
+  catalog-redis-cache:
+    container_name: catalog-redis-cache
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    networks:
+      - netnet
+
+  usermanagement-service:
+    container_name: usermanagement-service
+    build:
+      context: ../ESOWStrangler/src/Services/UserManagement/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 8002:8080
+    depends_on:
+      usermanagement-mssql-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__UserManagementDb=Server=usermanagement-mssql-db,1433;Database=UserManagementDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+      - RabbitMQ__HostName=rabbitmq
+    networks:
+      - netnet
+
+  usermanagement-mssql-db:
+    container_name: usermanagement-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1435:1433
+    volumes:
+      - usermanagement-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+
+  user-service:
+    container_name: user-service
+    build:
+      context: ../ESOWStrangler/src/Services/User/
+      dockerfile: Dockerfile
+    depends_on:
+      user-mssql-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - 8003:8080
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__UserDb=Server=user-mssql-db,1433;Database=UserDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+      - RabbitMQ__HostName=rabbitmq
+    networks:
+      - netnet
+
+  user-mssql-db:
+    container_name: user-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1436:1433
+    volumes:
+      - user-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+
+  basket-service:
+    container_name: basket-service
+    build:
+      context: ../ESOWStrangler/src/Services/Basket/
+      dockerfile: Dockerfile
+    depends_on:
+      basket-mssql-db:
+        condition: service_started
+    ports:
+      - 8004:8080
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__BasketDb=Server=basket-mssql-db,1433;Database=BasketDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+    networks:
+      - netnet
+  
+  basket-mssql-db:
+    container_name: basket-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1439:1433
+    volumes:
+      - basket-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+  
+  order-service:
+    container_name: order-service
+    build:
+      context: ../ESOWStrangler/src/Services/Order/
+      dockerfile: Dockerfile
+    depends_on:
+      order-mssql-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - 8005:8080
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__OrderDb=Server=order-mssql-db,1433;Database=OrderDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+    networks:
+      - netnet
+  
+  order-mssql-db:
+    container_name: order-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1438:1433
+    volumes:
+      - order-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+    
+  inventory-service:
+    container_name: inventory-service
+    build:
+      context: ../ESOWStrangler/src/Services/Inventory/
+      dockerfile: Dockerfile
+    depends_on:
+      inventory-mssql-db:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - 8006:8080
+    environment:
+      - MIGRATE_DATABASE=true
+      - ConnectionStrings__InventoryDb=Server=inventory-mssql-db,1433;Database=InventoryDb;User Id=sa;Password=Super.secretpa55word;TrustServerCertificate=True;
+    networks:
+      - netnet
+
+  inventory-mssql-db:
+    container_name: inventory-mssql-db
+    image: mcr.microsoft.com/mssql/server
+    restart: unless-stopped
+    cap_add: [ 'SYS_PTRACE' ]
+    user: root
+    ports:
+      - 1437:1433
+    volumes:
+      - inventory-mssql-data:/var/opt/mssql/data
+    environment:
+      ACCEPT_EULA: y
+      MSSQL_SA_PASSWORD: Super.secretpa55word
+    networks:
+      - netnet
+
+  rabbitmq:
+    container_name: rabbitmq
+    build:
+      context: ../ESOWStrangler/src/RabbitMQ/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 15672:15672
+      - 5672:5672
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=a-very-long-random-cookie-string
+    networks:
+      - netnet

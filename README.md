@@ -3,6 +3,7 @@ This is a school project where we are implementing a Strangler Pattern on the al
 https://github.com/dotnet-architecture/eShopOnWeb
 
 The code includes the implemented microservices that have overwritten the logic from the monolithic application.
+The code also includes the folder 'ESOWWeb' which is a modified copy of eShopOnWeb with code to integrate to rest of the strangler pattern.
 
 The application is runnable with Docker and is using the latest updated images made from this code.
 
