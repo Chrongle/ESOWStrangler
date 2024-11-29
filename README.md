@@ -2,11 +2,15 @@ This is a school project where we are implementing a Strangler Pattern on the al
 
 https://github.com/dotnet-architecture/eShopOnWeb
 
-The code includes the implemented microservices that have overwritten the logic from the monolithic application.
-The code also includes the folder 'ESOWWeb' which is a modified copy of eShopOnWeb with code to integrate to rest of the strangler pattern.
+
+The code have two folders.
+    - 'ESOWWeb' Which is a modified copy of eShopOnWeb with code to integrate to the strangler pattern.
+    - 'ESOWStrangler' Which are the implemented microservices that can overtake the logiv from the monolithic application.
+
+The 'ESOWWeb' is used to run the newly modified eShopOnWeb during development.
+
 
 The application is runnable with Docker and is using the latest updated images made from this code.
-
 
 How to make the application run locally:
 
@@ -16,7 +20,7 @@ Prerequisites:
 
 How to use:
 
-    - Run the Docker Compose file to get the latest images and run them with: "docker-compose -f docker-compose-prod.yml up -d"
+    - Run the Docker Compose file inside 'ESOWStrangler' to get the latest images and run them with: "docker-compose -f docker-compose-prod.yml up -d"
     - Open the application by opening "eshopwebmvc" on http://localhost:5106/
 
 Notes:
